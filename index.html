@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador Manual de QRs</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{
+  --bg:#090b10;--s0:#0d1018;--s1:#121620;--s2:#181d28;--s3:#1e2433;
+  --b0:#1f2638;--b1:#293044;--b2:#34405c;
+  --g:#2be89a;--gs:rgba(43,232,154,.06);--bl:#4d9ef5;--pu:#9b7ef8;
+  --tx:#d4daf0;--tx2:#7585a8;--tx3:#3e4d6c;--r:#f05070;--y:#f5c842;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0} body{min-height:100vh;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:12px;overflow-x:hidden}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--b1);border-radius:5px}
+.hdr{height:52px;background:var(--s0);border-bottom:1px solid var(--b0);display:flex;align-items:center;gap:10px;padding:0 18px;position:sticky;top:0;z-index:50}
+.hdr-logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--bl),#2457ff);display:flex;align-items:center;justify-content:center;font-size:14px}.hdr-title{font-size:14px;font-weight:800}.hdr-title em{font-style:normal;color:var(--bl)}.hdr-r{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--sans);font-size:11px;font-weight:700;padding:7px 13px;border-radius:8px;border:none;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.btn:disabled{opacity:.35;cursor:not-allowed}.btn-g{background:var(--bl);color:white}.btn-g:hover{filter:brightness(1.08)}.btn-ghost{background:var(--s2);color:var(--tx2);border:1px solid var(--b0)}.btn-ghost:hover{border-color:var(--b2);color:var(--tx)}.btn-p{background:transparent;color:var(--pu);border:1px solid rgba(155,126,248,.35)}.btn-p:hover{background:rgba(155,126,248,.1)}
+.main{max-width:1180px;margin:0 auto;padding:22px 18px 70px;display:grid;grid-template-columns:380px 1fr;gap:18px}.panel{background:var(--s1);border:1px solid var(--b0);border-radius:14px;overflow:hidden;box-shadow:0 16px 45px rgba(0,0,0,.20)}.ph{padding:16px 18px;border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between;gap:12px}.ph h2{font-size:14px;letter-spacing:-.2px}.ph small{color:var(--tx3);font-size:10px}.pb{padding:16px 18px}
+.form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:9px;color:var(--tx3);font-weight:800;text-transform:uppercase;letter-spacing:.8px}.field input,.field textarea{width:100%;background:var(--bg);border:1px solid var(--b0);border-radius:8px;color:var(--tx);font-family:var(--sans);font-size:12px;padding:10px 12px;outline:none}.field textarea{height:108px;resize:vertical;line-height:1.6;font-family:var(--mono);font-size:11px}.field input:focus,.field textarea:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(77,158,245,.09)}.hint{font-size:10px;color:var(--tx3);line-height:1.6}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}.sep{height:1px;background:var(--b0);margin:6px 0}.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px}.empty{min-height:360px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--tx3);text-align:center}.empty .ico{font-size:42px}.card{background:var(--s0);border:1px solid var(--b0);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:.15s}.card:hover{border-color:var(--b2);transform:translateY(-1px)}.ctitle{font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.csub{font-size:10px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qrmini{background:#fff;border-radius:9px;padding:8px;margin:auto;display:flex;align-items:center;justify-content:center}.qrmini canvas,.qrmini img{width:132px!important;height:132px!important}.card-actions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}.mini-btn{font-size:10px;font-weight:700;padding:6px 9px;border-radius:7px;border:1px solid var(--b1);background:var(--s2);color:var(--tx2);cursor:pointer}.mini-btn:hover{color:var(--tx);border-color:var(--b2)}.mini-btn.primary{background:var(--bl);color:#fff;border-color:var(--bl)}.mini-btn.danger{color:var(--r)}
+#qrModal{position:fixed;inset:0;z-index:400;background:rgba(9,11,16,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:18px}#qrModal.open{display:flex}.qr-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:36px 44px;display:flex;flex-direction:column;align-items:center;gap:16px;min-width:260px;box-shadow:0 24px 64px rgba(0,0,0,.6)}.qr-card-title{font-size:24px;font-weight:800;color:var(--tx);letter-spacing:-.6px;text-align:center;max-width:460px}.qr-card-sub{font-size:13px;color:#46577a;margin-top:-9px;text-align:center;line-height:1.5;font-family:var(--mono)}#qrCanvasContainer{border-radius:10px;background:#fff;padding:14px}.qr-card-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}.qr-dl-btn{font-family:var(--sans);font-size:12px;font-weight:800;padding:10px 18px;border-radius:9px;border:none;cursor:pointer;background:var(--bl);color:#fff;transition:filter .15s}.qr-dl-btn:hover{filter:brightness(1.12)}.qr-close-btn{font-family:var(--sans);font-size:12px;font-weight:800;padding:10px 18px;border-radius:9px;border:1px solid var(--b2);cursor:pointer;background:var(--s2);color:var(--tx2)}.qr-close-btn:hover{color:var(--tx)}
+.preview{position:fixed;inset:0;z-index:380;background:rgba(9,11,16,.90);backdrop-filter:blur(7px);display:none;flex-direction:column}.preview.open{display:flex}.prev-head{height:54px;background:var(--s0);border-bottom:1px solid var(--b0);display:flex;align-items:center;gap:10px;padding:0 16px}.prev-head h3{font-size:13px}.prev-body{flex:1;overflow:auto;padding:24px;display:flex;justify-content:center}.sheet{background:#fff;color:#000;width:210mm;min-height:297mm;padding:3mm;box-shadow:0 10px 35px rgba(0,0,0,.45)}.page{height:291mm;page-break-after:always;display:flex;flex-direction:column;align-items:center;padding:2mm}.p-title{font:800 26px Arial,sans-serif;text-align:center;margin-top:2mm;max-width:190mm;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.p-units{font:800 18px Arial,sans-serif;margin-top:2mm}.p-qr{margin-top:3mm}.p-qr canvas,.p-qr img{width:195mm!important;height:195mm!important}.p-foot{margin-top:auto;font:10px Arial,sans-serif;color:#777}.toast{position:fixed;bottom:18px;right:18px;z-index:800;background:var(--s3);border:1px solid var(--b2);border-left:3px solid var(--bl);border-radius:8px;padding:10px 14px;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transform:translateY(40px);transition:.2s}.toast.show{opacity:1;transform:translateY(0)}
+@media print{body>*:not(.preview){display:none!important}.preview{position:static;display:block!important;background:white}.prev-head{display:none}.prev-body{display:block;padding:0}.sheet{box-shadow:none;width:auto;min-height:auto;padding:0}.page{height:297mm;padding:10mm;break-after:page}}
+@media(max-width:900px){.main{grid-template-columns:1fr}.hdr{height:auto;min-height:52px;align-items:flex-start;padding:12px}.hdr-r{width:100%}.qr-card{padding:28px 22px}.qr-card-title{font-size:20px}#qrCanvasContainer canvas,#qrCanvasContainer img{max-width:78vw!important;max-height:78vw!important}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<header class="hdr">
+  <div class="hdr-logo">⬛</div><div class="hdr-title">Generador <em>Manual</em> de QRs</div>
+  <div class="hdr-r">
+    <button class="btn btn-ghost" onclick="clearAll()">↺ Limpiar</button>
+    <button class="btn btn-p" onclick="openBatchPreview()" id="btnPreview" disabled>👁 Previsualizar impresión</button>
+    <button class="btn btn-g" onclick="exportBatchPdf()" id="btnPdf" disabled>⬇ Guardar PDF</button>
+  </div>
+</header>
+<main class="main">
+  <section class="panel">
+    <div class="ph"><div><h2>Crear QR</h2><small>Solo orden y unidades</small></div></div>
+    <div class="pb">
+      <div class="form">
+        <div class="field"><label>Orden</label><input id="orden" placeholder="Ej. 101530 BROWN TATA MEN 1" autocomplete="off"></div>
+        <div class="field"><label>Unidades</label><input id="unidades" type="number" min="0" step="1" placeholder="Ej. 250"></div>
+        <div class="hint">El QR se genera igual que tu planificador: <b>ORDEN|UNIDADES</b>.</div>
+        <div class="actions"><button class="btn btn-g" onclick="addQr()">＋ Generar QR</button><button class="btn btn-ghost" onclick="previewTemp()">👁 Previsualizar</button></div>
+      </div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="ph"><div><h2>QRs generados</h2><small id="countLbl">0 códigos</small></div></div>
+    <div class="pb"><div id="list" class="list"></div><div id="empty" class="empty"><div class="ico">⬛</div><h2>Sin QRs todavía</h2><p>Escribe orden y unidades para generar el QR.</p></div></div>
+  </section>
+</main>
+<div id="qrModal" onclick="if(event.target===this)closeQrModal()">
+  <div class="qr-card">
+    <div class="qr-card-title" id="qrModalTitle">—</div>
+    <div class="qr-card-sub" id="qrModalSub">—</div>
+    <div id="qrCanvasContainer"></div>
+    <div class="qr-card-actions">
+      <button class="qr-dl-btn" onclick="downloadCurrent('png')">⬇ Descargar PNG</button>
+      <button class="qr-dl-btn" onclick="downloadCurrent('jpg')">⬇ Guardar JPG</button>
+      <button class="qr-dl-btn" onclick="printSingle()">🖨 Imprimir</button>
+      <button class="qr-close-btn" onclick="closeQrModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+<div class="preview" id="previewPanel">
+  <div class="prev-head"><h3>Previsualización para impresión</h3><div style="margin-left:auto;display:flex;gap:8px"><button class="btn btn-g" onclick="window.print()">🖨 Imprimir</button><button class="btn btn-ghost" onclick="closeBatchPreview()">Cerrar</button></div></div>
+  <div class="prev-body"><div class="sheet" id="printSheet"></div></div>
+</div>
+<script>
+'use strict';
+let qrs=[]; let current=null; let seq=1;
+const $=id=>document.getElementById(id);
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2500)}
+function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function clean(s){return String(s||'').trim()}
+function qrPayload(o){ return Number(o.units)>0 ? `${clean(o.title)}|${clean(o.units)}` : clean(o.title); }
+function makeQr(container,text,size=300){container.innerHTML=''; new QRCode(container,{text:text||' ',width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});}
+function addQr(){const title=clean($('orden').value); if(!title){toast('Escribe una orden');return} const units=clean($('unidades').value); qrs.push({id:'qr'+(seq++),title,units}); $('orden').value=''; $('unidades').value=''; renderList(); toast('QR generado')}
+function previewTemp(){const title=clean($('orden').value)||'Vista previa'; const units=clean($('unidades').value); openQrModal({id:'temp',title,units})}
+
+function renderList(){const list=$('list'), empty=$('empty'); list.innerHTML=''; empty.style.display=qrs.length?'none':'flex'; $('countLbl').textContent=qrs.length+' código'+(qrs.length!==1?'s':''); $('btnPreview').disabled=!qrs.length; $('btnPdf').disabled=!qrs.length; qrs.forEach((o,i)=>{const card=document.createElement('div');card.className='card';card.innerHTML=`<div><div class="ctitle">${esc(o.title)}</div><div class="csub">Unidades: ${esc(o.units||0)}</div></div><div class="qrmini" id="mini_${o.id}"></div><div class="card-actions"><button class="mini-btn primary" onclick="openQrModal(qrs[${i}])">Ver</button><button class="mini-btn" onclick="downloadByIndex(${i},'png')">PNG</button><button class="mini-btn" onclick="downloadByIndex(${i},'jpg')">JPG</button><button class="mini-btn danger" onclick="removeQr(${i})">Quitar</button></div>`; list.appendChild(card); setTimeout(()=>makeQr($('mini_'+o.id),qrPayload(o),132),0);});}
+function removeQr(i){qrs.splice(i,1);renderList()}
+function clearAll(){if(qrs.length&&!confirm('¿Borrar todos los QRs?'))return;qrs=[];renderList();}
+function openQrModal(o){current=o; $('qrModalTitle').textContent=o.title||'—'; $('qrModalSub').textContent = 'Unidades · ' + (o.units || 0); makeQr($('qrCanvasContainer'),qrPayload(o),300); $('qrModal').classList.add('open')}
+function closeQrModal(){$('qrModal').classList.remove('open')}
+function canvasToJpg(canvas){const c=document.createElement('canvas');c.width=canvas.width;c.height=canvas.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(canvas,0,0);return c.toDataURL('image/jpeg',0.96)}
+function downloadCanvas(canvas,name,type){const a=document.createElement('a');a.download=name+'.'+type;a.href=type==='jpg'?canvasToJpg(canvas):canvas.toDataURL('image/png');a.click()}
+function downloadCurrent(type){const canvas=$('qrCanvasContainer').querySelector('canvas'); if(!canvas){toast('QR no listo');return} downloadCanvas(canvas,'QR_'+(current?.title||'manual').replace(/[^a-z0-9_-]+/gi,'_'),type)}
+function downloadByIndex(i,type){const o=qrs[i]; const div=document.createElement('div');div.style.cssText='position:fixed;left:-9999px';document.body.appendChild(div);makeQr(div,qrPayload(o),900);setTimeout(()=>{downloadCanvas(div.querySelector('canvas'),'QR_'+o.title.replace(/[^a-z0-9_-]+/gi,'_'),type);document.body.removeChild(div)},100)}
+function buildPrintSheet(targets=qrs){const sheet=$('printSheet'); sheet.innerHTML=''; targets.forEach((o,i)=>{const p=document.createElement('div');p.className='page';p.innerHTML=`<div class="p-title">${esc(o.title)}</div><div class="p-units">Unidades: ${esc(o.units||0)}</div><div class="p-qr" id="pqr_${i}"></div>`; sheet.appendChild(p); setTimeout(()=>makeQr($('pqr_'+i),qrPayload(o),900),0);});}
+function openBatchPreview(){if(!qrs.length)return; buildPrintSheet(); $('previewPanel').classList.add('open')}
+function closeBatchPreview(){$('previewPanel').classList.remove('open')}
+function printSingle(){if(!current)return; buildPrintSheet([current]); $('previewPanel').classList.add('open'); setTimeout(()=>window.print(),250)}
+async function exportBatchPdf(){if(!qrs.length)return; const {jsPDF}=window.jspdf; const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'}); const pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight(), centerX=pageW/2; for(let i=0;i<qrs.length;i++){const o=qrs[i]; if(i>0)doc.addPage(); doc.setFillColor(255,255,255);doc.rect(0,0,pageW,pageH,'F'); doc.setTextColor(0,0,0);doc.setFont('helvetica','bold');doc.setFontSize(24);doc.text(String(o.title||'').slice(0,34),centerX,16,{align:'center'}); doc.setFontSize(18);doc.text('Unidades: '+(o.units||0),centerX,29,{align:'center'}); const url=await qrDataUrl(qrPayload(o)); const qs=Math.min(pageW-6,pageH-38); doc.addImage(url,'PNG',(pageW-qs)/2,32,qs,qs); doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(120,120,120);doc.text(`Página ${i+1} de ${qrs.length}`,centerX,pageH-6,{align:'center'});} doc.save('QR_Manual_'+new Date().toISOString().slice(0,10)+'.pdf'); toast('PDF generado')}
+function qrDataUrl(text){return new Promise(res=>{const div=document.createElement('div');div.style.cssText='position:fixed;left:-9999px';document.body.appendChild(div);makeQr(div,text,900);setTimeout(()=>{res(div.querySelector('canvas').toDataURL('image/png'));document.body.removeChild(div)},90)})}
+renderList();
+</script>
+</body>
+</html>
